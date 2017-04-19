@@ -61,11 +61,11 @@ public class Permutations<T> {
     @SuppressWarnings("unchecked")
     public <E> Permutations<E> of(final SortedSet<E> choices) {
         Objects.requireNonNull(choices);
-        return new Permutations<E>((E[]) choices.toArray(), this.positions);
+        return new Permutations<>((E[]) choices.toArray(), this.positions);
     }
 
     public Permutations<T> using(final int positions) {
         if (positions <= 0) throw new IllegalArgumentException("Length using sequences can't be negative.");
-        return new Permutations<T>(choices, positions);
+        return new Permutations<>(choices, positions);
     }
 }
