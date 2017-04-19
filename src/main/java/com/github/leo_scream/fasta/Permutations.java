@@ -1,8 +1,10 @@
 package com.github.leo_scream.fasta;
 
+import java.lang.reflect.Array;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * @author Denis Verkhoturov, mod.satyr@gmail.com
@@ -42,16 +44,21 @@ public class Permutations<T> {
         return permutation;
     }
 
-    @SuppressWarnings("unchecked")
-    private T[] generate(final int index) {
-        return (T[]) IntStream.range(0, positions)
-                .map(position -> Expressions.numberOnPosition(index, choices.length, positions - position - 1))
-                .mapToObj(choice -> choices[choice])
-                .toArray(Object[]::new);
+    public Stream<T[]> stream() {
+        return IntStream.range(0, size)
+                .mapToObj(this::get);
     }
 
     public int size() {
         return size;
+    }
+
+    @SuppressWarnings("unchecked")
+    private T[] generate(final int index) {
+        return IntStream.range(0, positions)
+                .map(position -> Expressions.numberOnPosition(index, choices.length, positions - position - 1))
+                .mapToObj(choice -> choices[choice])
+                .toArray(size -> (T[]) Array.newInstance(choices.getClass().getComponentType(), size));
     }
 
     private void checkBound(final int index) {
