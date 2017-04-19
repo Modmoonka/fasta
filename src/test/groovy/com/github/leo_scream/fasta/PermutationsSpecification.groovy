@@ -6,36 +6,36 @@ import spock.lang.Specification
  * @author Denis Verkhoturov, mod.satyr@gmail.com
  */
 class PermutationsSpecification extends Specification {
-    Permutations permutations
+    Permutations<String> permutations
 
     def setup() {
         permutations = new Permutations()
     }
 
-    def "Permutations throws NPE if constructed with null alphabet"() {
+    def "Permutations throws NPE if constructed with null choices"() {
         when:
-        permutations.with(null)
+        permutations.of(null)
 
         then:
         thrown(NullPointerException)
     }
 
-    def "Permutations throws IAE if constructed with negative length"() {
+    def "Permutations throws IAE if constructed with negative positions"() {
         when:
-        permutations.with(-1)
+        permutations.using(-1)
 
         then:
         thrown(IllegalArgumentException)
     }
 
-    def "Size of permutations without alphabet and length is 0"() {
+    def "Size of permutations without choices and positions is 0"() {
         expect:
         permutations.size() == 0
     }
 
     def "Size calculates correctly"() {
         setup:
-        permutations = permutations.with(alphabet as SortedSet).with(length as int)
+        permutations = permutations.of(alphabet as SortedSet).using(length as int)
 
         expect:
         permutations.size() == size
@@ -65,17 +65,17 @@ class PermutationsSpecification extends Specification {
 
     def "i-th permutation of index works correctly"() {
         setup:
-        permutations = permutations.with(["A", "C", "G", "T"] as SortedSet).with(3)
+        permutations = permutations.of(["A", "C", "G", "T"] as SortedSet).using(3)
 
         expect:
-        permutations.get(index) == permutation
+        permutations.get(index) == permutation as String[]
 
         where:
-        permutation || index
-        "AAA"       || 0
-        "AAC"       || 1
-        "CAA"       || 16
-        "CAG"       || 18
-        "TTT"       || 63
+        permutation     || index
+        ["A", "A", "A"] || 0
+        ["A", "A", "C"] || 1
+        ["C", "A", "A"] || 16
+        ["C", "A", "G"] || 18
+        ["T", "T", "T"] || 63
     }
 }
