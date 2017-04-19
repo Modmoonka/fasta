@@ -1,7 +1,5 @@
 package com.github.leo_scream.fasta;
 
-import java.lang.reflect.Array;
-import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -12,21 +10,15 @@ import java.util.stream.Stream;
 public class Permutations<T> {
     private final HashMap<Integer, T[]> cashed;
     private final T[] choices;
-    private final int positions;
+    private final T[] positions;
     private final int size;
 
-    @SuppressWarnings("unchecked")
-    public Permutations() {
-        this((T[]) new ArrayList<T>().toArray(), 0);
-    }
-
-    @SuppressWarnings("unchecked")
-    private Permutations(final T[] choices, final int positions) {
+    private Permutations(final T[] choices, final T[] positions) {
         this.choices = choices;
         this.positions = positions;
-        this.size = choices.length == 0 || positions == 0
+        this.size = choices.length == 0 || positions.length == 0
                 ? 0
-                : BigInteger.valueOf(choices.length).pow(positions).intValue();
+                : (int) Math.pow(choices.length, positions.length);
         this.cashed = new HashMap<>();
     }
 
@@ -53,12 +45,12 @@ public class Permutations<T> {
         return size;
     }
 
-    @SuppressWarnings("unchecked")
     private T[] generate(final int index) {
-        return IntStream.range(0, positions)
-                .map(position -> Expressions.numberOnPosition(index, choices.length, positions - position - 1))
-                .mapToObj(choice -> choices[choice])
-                .toArray(size -> (T[]) Array.newInstance(choices.getClass().getComponentType(), size));
+        final T[] permutation = Arrays.copyOf(positions, positions.length);
+        for (int i = 0; i < positions.length; i++) {
+            permutation[i] = choices[Expressions.numberOnPosition(index, choices.length, positions.length - i - 1)];
+        }
+        return permutation;
     }
 
     private void checkBound(final int index) {
@@ -66,13 +58,9 @@ public class Permutations<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public <E> Permutations<E> of(final SortedSet<E> choices) {
+    public static <E> Permutations<E> of(final SortedSet<E> choices, final E[] positions) {
         Objects.requireNonNull(choices);
-        return new Permutations<>((E[]) choices.toArray(), this.positions);
-    }
-
-    public Permutations<T> using(final int positions) {
-        if (positions <= 0) throw new IllegalArgumentException("Length using sequences can't be negative.");
-        return new Permutations<>(choices, positions);
+        Objects.requireNonNull(positions);
+        return new Permutations<>((E[]) choices.toArray(), positions);
     }
 }

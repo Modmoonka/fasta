@@ -9,42 +9,29 @@ class PermutationsSpecification extends Specification {
     Permutations<String> permutations
 
     def setup() {
-        permutations = new Permutations()
+        permutations = Permutations.of([] as SortedSet, new String[0])
     }
 
     def "Permutations throws NPE if constructed with null choices"() {
         when:
-        permutations.of(null)
+        permutations.of(null, null)
 
         then:
         thrown(NullPointerException)
     }
 
-    def "Permutations throws IAE if constructed with negative positions"() {
-        when:
-        permutations.using(-1)
-
-        then:
-        thrown(IllegalArgumentException)
-    }
-
-    def "Size of permutations without choices and positions is 0"() {
-        expect:
-        permutations.size() == 0
-    }
-
     def "Size calculates correctly"() {
         setup:
-        permutations = permutations.of(alphabet as SortedSet).using(length as int)
+        permutations = permutations.of(alphabet as SortedSet, positions)
 
         expect:
         permutations.size() == size
 
         where:
-        alphabet             | length || size
-        ["A", "C", "G", "T"] | 4      || 256
-        ["A", "C", "G", "T"] | 5      || 1024
-        ["X", "Y"]           | 3      || 8
+        alphabet             | positions      || size
+        ["A", "C", "G", "T"] | new String [4] || 256
+        ["A", "C", "G", "T"] | new String [5] || 1024
+        ["X", "Y"]           | new String [3] || 8
     }
 
     def "i-th permutation of negative index throws AIOBE"() {
@@ -65,7 +52,7 @@ class PermutationsSpecification extends Specification {
 
     def "i-th permutation of index works correctly"() {
         setup:
-        permutations = permutations.of(["A", "C", "G", "T"] as SortedSet).using(3)
+        permutations = permutations.of(["A", "C", "G", "T"] as SortedSet, new String[3])
 
         expect:
         permutations.get(index) == permutation as String[]
