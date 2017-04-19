@@ -3,7 +3,6 @@ package com.github.leo_scream.fasta;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * @author Denis Verkhoturov, mod.satyr@gmail.com
@@ -12,7 +11,7 @@ public class Permutations<T> {
     private final HashMap<Integer, T[]> cashed;
     private final T[] choices;
     private final int positions;
-    private final BigInteger size;
+    private final int size;
 
     @SuppressWarnings("unchecked")
     public Permutations() {
@@ -24,8 +23,8 @@ public class Permutations<T> {
         this.choices = choices;
         this.positions = positions;
         this.size = choices.length == 0 || positions == 0
-                ? BigInteger.ZERO
-                : BigInteger.valueOf(choices.length).pow(positions);
+                ? 0
+                : BigInteger.valueOf(choices.length).pow(positions).intValue();
         this.cashed = new HashMap<>();
     }
 
@@ -33,7 +32,7 @@ public class Permutations<T> {
         checkBound(index);
         final T[] permutation;
 
-        if (index < cashed.size()) {
+        if (cashed.containsKey(index)) {
             permutation = cashed.get(index);
         } else {
             permutation = generate(index);
@@ -51,16 +50,12 @@ public class Permutations<T> {
                 .toArray(Object[]::new);
     }
 
-    public Stream<T[]> stream() {
-        return cashed.values().stream();
-    }
-
-    public BigInteger size() {
+    public int size() {
         return size;
     }
 
     private void checkBound(final int index) {
-        if (index < 0 || size.compareTo(BigInteger.valueOf(index)) < 0) throw new ArrayIndexOutOfBoundsException();
+        if (index < 0 || index > size) throw new ArrayIndexOutOfBoundsException();
     }
 
     @SuppressWarnings("unchecked")
