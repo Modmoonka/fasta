@@ -3,33 +3,39 @@ package com.github.leo_scream.fasta;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * @author Denis Verkhoturov, mod.satyr@gmail.com
  */
-public class FastaFile {
+public class Fasta {
     private final static String extension = ".fasta";
     private final Path path;
     private final List<Sequence> sequences;
 
-    private FastaFile(Path path, List<Sequence> sequences) {
+    private Fasta(Path path, List<Sequence> sequences) {
         this.path = path;
         this.sequences = sequences;
     }
 
+    public Path path() {
+        return path;
+    }
+
+    public Stream<Sequence> sequences() {
+        return sequences.stream();
+    }
+
     /**
-     * Factory method creates {@code FastaFile} from {@code path}.
+     * Factory method creates {@code Fasta} from {@code path}.
      *
      * @param path from which file will be created
-     * @return new object of {@code FastaFile} and read all lines to sequences
+     * @return new object of {@code Fasta} and read all lines to sequences
      * @throws NullPointerException     if {@code path} is null
      * @throws IllegalArgumentException if {@code path} has no .fasta extension
      */
-    public static FastaFile create(final Path path) {
+    public static Fasta create(final Path path) {
         Objects.requireNonNull(path);
         if (!path.toString().endsWith(extension))
             throw new IllegalArgumentException("File on path '" + path + "' has no .fasta extension");
@@ -42,9 +48,9 @@ public class FastaFile {
                 sequences.add(Sequence.create(linesIterator.next(), linesIterator.next()));
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Can't read file " + path + " cause: " + e.getMessage());
         }
 
-        return new FastaFile(path, sequences);
+        return new Fasta(path, sequences);
     }
 }

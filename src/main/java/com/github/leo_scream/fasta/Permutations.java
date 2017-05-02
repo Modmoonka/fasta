@@ -1,6 +1,9 @@
 package com.github.leo_scream.fasta;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Objects;
+import java.util.SortedSet;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
