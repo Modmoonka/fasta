@@ -3,7 +3,7 @@ package com.github.leo_scream.fasta;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Denis Verkhoturov, mod.satyr@gmail.com
@@ -11,12 +11,12 @@ import java.util.stream.Collectors;
 public class Statistics {
     private final Fasta file;
     private final Set<String> permutations;
-    private final Set<SequenceOccurrences> sequenceOccurrences;
 
-    private Statistics(Fasta file, Set<String> permutations, Set<SequenceOccurrences> sequenceOccurrences) {
-        this.file = file;
+    public Statistics(final Path path, Set<String> permutations) {
+        Objects.requireNonNull(path);
+        Objects.requireNonNull(permutations);
+        this.file = new Fasta(path);
         this.permutations = permutations;
-        this.sequenceOccurrences = sequenceOccurrences;
     }
 
     public Fasta file() {
@@ -27,17 +27,28 @@ public class Statistics {
         return permutations;
     }
 
-    public Set<SequenceOccurrences> sequenceOccurrences() {
-        return sequenceOccurrences;
+    public Stream<SequenceOccurrences> sequenceOccurrences() {
+        return file.sequences()
+                .map(SequenceOccurrences::new);
     }
 
-    public static Statistics of(final Path path, final Set<String> permutations) {
-        Objects.requireNonNull(path);
-        Objects.requireNonNull(permutations);
-        final Fasta file = Fasta.create(path);
-        final Set<SequenceOccurrences> occurrences = file.sequences()
-                .map(sequence -> SequenceOccurrences.create(sequence, permutations))
-                .collect(Collectors.toSet());
-        return new Statistics(file, permutations, occurrences);
+    public boolean equals(final Statistics another) {
+        return file.equals(another.file)
+                && permutations.equals(another.permutations);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Statistics)) return false;
+        return this.equals((Statistics) o);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + permutations.hashCode();
+        result = 31 * result + file.hashCode();
+        return result;
     }
 }

@@ -21,18 +21,18 @@ public class Main {
 
             if (!directory.toFile().isDirectory()) throw new IOException("Path must be a directory");
 
-            final Set<String> permutations = Permutations
-                    .of(new TreeSet<>(Set.of("A", "C", "G", "T")), new String[kmerLength])
-                    .stream()
-                    .map(parts -> String.join("", parts))
-                    .collect(Collectors.toSet());
+            final Set<String> permutations =
+                    new Permutations<>(new TreeSet<>(Set.of("A", "C", "G", "T")), new String[kmerLength])
+                            .stream()
+                            .map(parts -> String.join("", parts))
+                            .collect(Collectors.toSet());
 
             Files.list(directory)
                     .filter(path -> path.toString().endsWith(".fasta"))
-                    .map(path -> Statistics.of(path, permutations))
+                    .map(path -> new Statistics(path, permutations))
                     .forEach(statistics -> {
                         final String filename = statistics.file().path().toString().replace(".fasta", ".tsv");
-                        saveToTcv(statistics, filename);
+                        saveToTsv(statistics, filename);
                     });
         } catch (IOException e) {
             System.err.println("Can't work with this path cause: " + e.getMessage());
@@ -41,7 +41,7 @@ public class Main {
         }
     }
 
-    private static void saveToTcv(final Statistics statistics, final String filepath) {
+    private static void saveToTsv(final Statistics statistics, final String filepath) {
         try (final BufferedWriter writer = new BufferedWriter(new FileWriter(filepath))) {
             writer.write("Sequence\t");
             writer.write(String.join("\t", statistics.permutations()));
@@ -49,16 +49,19 @@ public class Main {
             statistics.sequenceOccurrences().forEach(
                     sequenceOccurrences -> {
                         try {
-                            writer.write(sequenceOccurrences.sequence().name() + "\t");
+                            writer.write(sequenceOccurrences.sequence().data() + "\t");
                             writer.write(
-                                    sequenceOccurrences.occurrences().values().stream()
-                                            .map(Object::toString)
+                                    sequenceOccurrences.occurrences(statistics.permutations())
+                                            .values()
+                                            .stream()
+                                            .map(count -> count == 0 ? "0" : "1")
                                             .collect(Collectors.joining("\t"))
                             );
                             writer.newLine();
                         } catch (IOException e) {
                             System.err.println(
                                     "Can't write sequence " + sequenceOccurrences.sequence().name() +
+                                            " " + sequenceOccurrences.sequence().data() +
                                             " to file " + filepath + " cause: " + e.getMessage());
                         }
                     }

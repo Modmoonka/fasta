@@ -12,30 +12,40 @@ import java.util.stream.Collectors;
  */
 public class SequenceOccurrences {
     private final Sequence sequence;
-    private final Map<String, Long> occurrences;
 
-    private SequenceOccurrences(Sequence sequence, Map<String, Long> occurrences) {
+    public SequenceOccurrences(Sequence sequence) {
+        Objects.requireNonNull(sequence);
         this.sequence = sequence;
-        this.occurrences = occurrences;
     }
 
     public Sequence sequence() {
         return sequence;
     }
 
-    public Map<String, Long> occurrences() {
-        return occurrences;
-    }
-
-    public static SequenceOccurrences create(final Sequence sequence, final Set<String> permutations) {
-        Objects.requireNonNull(sequence);
-        Objects.requireNonNull(permutations);
-        final Map<String, Long> occurrences = permutations.stream().collect(
+    public Map<String, Long> occurrences(final Set<String> permutations) {
+        return permutations.stream().collect(
                 Collectors.toMap(
                         Function.identity(),
                         permutation -> Pattern.compile(permutation).matcher(sequence.data()).results().count()
                 )
         );
-        return new SequenceOccurrences(sequence, occurrences);
+    }
+
+    public boolean equals(final SequenceOccurrences another) {
+        return sequence.equals(another.sequence);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SequenceOccurrences)) return false;
+        return this.equals((SequenceOccurrences) o);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + sequence.hashCode();
+        return result;
     }
 }

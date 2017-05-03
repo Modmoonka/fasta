@@ -15,20 +15,6 @@ public class Sequence {
     }
 
     /**
-     * @return Sequence name
-     */
-    public String name() {
-        return name;
-    }
-
-    /**
-     * @return Sequence data
-     */
-    public String data() {
-        return data;
-    }
-
-    /**
      * Create new {@code Sequence} object.
      *
      * @param name sequence name
@@ -43,5 +29,38 @@ public class Sequence {
         final String dataPattern = "^[ACGT]++$";
         if (!data.matches(dataPattern)) throw new IllegalArgumentException("Sequence data is not valid: " + data);
         return new Sequence(name, data);
+    }
+
+    /**
+     * @return Sequence name
+     */
+    public String name() {
+        return name;
+    }
+
+    /**
+     * @return Sequence data
+     */
+    public String data() {
+        return data;
+    }
+
+    public boolean equals(final Sequence another) {
+        return name.equals(another.name) && data.equals(another.data);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Sequence)) return false;
+        return equals((Sequence) o);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + name.hashCode();
+        result = 31 * result + data.hashCode();
+        return result;
     }
 }

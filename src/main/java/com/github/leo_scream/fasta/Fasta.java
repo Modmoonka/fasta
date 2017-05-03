@@ -3,7 +3,10 @@ package com.github.leo_scream.fasta;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -12,11 +15,12 @@ import java.util.stream.Stream;
 public class Fasta {
     private final static String extension = ".fasta";
     private final Path path;
-    private final List<Sequence> sequences;
 
-    private Fasta(Path path, List<Sequence> sequences) {
+    public Fasta(Path path) {
+        Objects.requireNonNull(path);
+        if (!path.toString().endsWith(extension))
+            throw new IllegalArgumentException("File on path '" + path + "' has no .fasta extension");
         this.path = path;
-        this.sequences = sequences;
     }
 
     public Path path() {
@@ -24,24 +28,7 @@ public class Fasta {
     }
 
     public Stream<Sequence> sequences() {
-        return sequences.stream();
-    }
-
-    /**
-     * Factory method creates {@code Fasta} from {@code path}.
-     *
-     * @param path from which file will be created
-     * @return new object of {@code Fasta} and read all lines to sequences
-     * @throws NullPointerException     if {@code path} is null
-     * @throws IllegalArgumentException if {@code path} has no .fasta extension
-     */
-    public static Fasta create(final Path path) {
-        Objects.requireNonNull(path);
-        if (!path.toString().endsWith(extension))
-            throw new IllegalArgumentException("File on path '" + path + "' has no .fasta extension");
-
         final List<Sequence> sequences = new LinkedList<>();
-
         try {
             final Iterator<String> linesIterator = Files.readAllLines(path).iterator();
             while (linesIterator.hasNext()) {
@@ -50,7 +37,24 @@ public class Fasta {
         } catch (IOException e) {
             System.err.println("Can't read file " + path + " cause: " + e.getMessage());
         }
+        return sequences.stream();
+    }
 
-        return new Fasta(path, sequences);
+    public boolean equals(final Fasta another) {
+        return path.equals(another.path);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Fasta)) return false;
+        return this.equals((Fasta) o);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + path.hashCode();
+        return result;
     }
 }
