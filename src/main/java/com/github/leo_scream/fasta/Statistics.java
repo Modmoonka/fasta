@@ -1,8 +1,13 @@
 package com.github.leo_scream.fasta;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -30,6 +35,36 @@ public class Statistics {
     public Stream<SequenceOccurrences> sequenceOccurrences() {
         return file.sequences()
                 .map(SequenceOccurrences::new);
+    }
+
+    public Path save() {
+        final String filename = file.path().toString().replace(file.extension(), ".tsv");
+        try (final BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
+            writer.write("Sequence\t");
+            writer.write(String.join("\t", permutations));
+            writer.newLine();
+            sequenceOccurrences().forEach(
+                    occurrences -> {
+                        try {
+                            writer.write(occurrences.sequence().data() + "\t");
+                            writer.write(
+                                    occurrences.occurrences(permutations).values().stream()
+                                            .map(count -> count == 0 ? "0" : "1")
+                                            .collect(Collectors.joining("\t"))
+                            );
+                            writer.newLine();
+                        } catch (IOException e) {
+                            System.err.println(
+                                    "Can't write sequence " + occurrences.sequence().name() +
+                                            " " + occurrences.sequence().data() +
+                                            " to file " + filename + " cause: " + e.getMessage());
+                        }
+                    }
+            );
+        } catch (IOException e) {
+            System.err.println("Can't write to file " + filename + " cause: " + e.getMessage());
+        }
+        return Paths.get(filename);
     }
 
     public boolean equals(final Statistics another) {

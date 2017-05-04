@@ -13,7 +13,7 @@ import java.util.stream.Stream;
  * @author Denis Verkhoturov, mod.satyr@gmail.com
  */
 public class Fasta {
-    private final static String extension = ".fasta";
+    private final String extension = ".fasta";
     private final Path path;
 
     public Fasta(Path path) {
@@ -21,6 +21,10 @@ public class Fasta {
         if (!path.toString().endsWith(extension))
             throw new IllegalArgumentException("File on path '" + path + "' has no .fasta extension");
         this.path = path;
+    }
+
+    public String extension() {
+        return extension;
     }
 
     public Path path() {

@@ -1,6 +1,8 @@
 package com.github.leo_scream.fasta;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,6 +21,7 @@ public class Main {
             final Path directory = Paths.get(reader.readLine());
             System.out.print("K-mer length: ");
             final int kmerLength = Integer.parseInt(reader.readLine());
+            System.out.println("Result files:");
 
             if (!directory.toFile().isDirectory()) throw new IOException("Path must be a directory");
 
@@ -32,44 +35,12 @@ public class Main {
             Files.list(directory)
                     .filter(path -> path.toString().endsWith(".fasta"))
                     .map(path -> new Statistics(path, permutations))
-                    .forEach(statistics -> {
-                        final String filename = statistics.file().path().toString().replace(".fasta", ".tsv");
-                        saveToTsv(statistics, filename);
-                    });
+                    .map(Statistics::save)
+                    .forEach(System.out::println);
         } catch (IOException e) {
             System.err.println("Can't work with this path cause: " + e.getMessage());
         } catch (NumberFormatException e) {
             System.err.println("K-mer length must be unsighted integer value");
-        }
-    }
-
-    private static void saveToTsv(final Statistics statistics, final String filepath) {
-        try (final BufferedWriter writer = new BufferedWriter(new FileWriter(filepath))) {
-            writer.write("Sequence\t");
-            writer.write(String.join("\t", statistics.permutations()));
-            writer.newLine();
-            statistics.sequenceOccurrences().forEach(
-                    sequenceOccurrences -> {
-                        try {
-                            writer.write(sequenceOccurrences.sequence().data() + "\t");
-                            writer.write(
-                                    sequenceOccurrences.occurrences(statistics.permutations())
-                                            .values()
-                                            .stream()
-                                            .map(count -> count == 0 ? "0" : "1")
-                                            .collect(Collectors.joining("\t"))
-                            );
-                            writer.newLine();
-                        } catch (IOException e) {
-                            System.err.println(
-                                    "Can't write sequence " + sequenceOccurrences.sequence().name() +
-                                            " " + sequenceOccurrences.sequence().data() +
-                                            " to file " + filepath + " cause: " + e.getMessage());
-                        }
-                    }
-            );
-        } catch (IOException e) {
-            System.err.println("Can't write to file " + filepath + " cause: " + e.getMessage());
         }
     }
 }
