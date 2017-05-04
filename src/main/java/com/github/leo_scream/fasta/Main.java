@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -21,11 +22,12 @@ public class Main {
 
             if (!directory.toFile().isDirectory()) throw new IOException("Path must be a directory");
 
-            final Set<String> permutations =
+            final SortedSet<String> permutations = new TreeSet<>(
                     new Permutations<>(new TreeSet<>(Set.of("A", "C", "G", "T")), new String[kmerLength])
                             .stream()
                             .map(parts -> String.join("", parts))
-                            .collect(Collectors.toSet());
+                            .collect(Collectors.toSet())
+            );
 
             Files.list(directory)
                     .filter(path -> path.toString().endsWith(".fasta"))

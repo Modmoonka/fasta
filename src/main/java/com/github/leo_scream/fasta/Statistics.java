@@ -2,7 +2,7 @@ package com.github.leo_scream.fasta;
 
 import java.nio.file.Path;
 import java.util.Objects;
-import java.util.Set;
+import java.util.SortedSet;
 import java.util.stream.Stream;
 
 /**
@@ -10,9 +10,9 @@ import java.util.stream.Stream;
  */
 public class Statistics {
     private final Fasta file;
-    private final Set<String> permutations;
+    private final SortedSet<String> permutations;
 
-    public Statistics(final Path path, Set<String> permutations) {
+    public Statistics(final Path path, SortedSet<String> permutations) {
         Objects.requireNonNull(path);
         Objects.requireNonNull(permutations);
         this.file = new Fasta(path);
@@ -23,7 +23,7 @@ public class Statistics {
         return file;
     }
 
-    public Set<String> permutations() {
+    public SortedSet<String> permutations() {
         return permutations;
     }
 

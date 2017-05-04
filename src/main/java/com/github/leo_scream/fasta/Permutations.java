@@ -6,6 +6,8 @@ import java.util.SortedSet;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static com.github.leo_scream.fasta.Expressions.numberOnPosition;
+
 /**
  * @author Denis Verkhoturov, mod.satyr@gmail.com
  */
@@ -33,7 +35,7 @@ public class Permutations<T> {
         checkBound(index);
         final T[] permutation = Arrays.copyOf(positions, positions.length);
         for (int i = 0; i < positions.length; i++) {
-            permutation[i] = choices[Expressions.numberOnPosition(index, choices.length, positions.length - i - 1)];
+            permutation[i] = choices[numberOnPosition(index, choices.length, positions.length - i - 1)];
         }
         return permutation;
     }
@@ -45,5 +47,27 @@ public class Permutations<T> {
 
     private void checkBound(final int index) {
         if (index < 0 || index > size) throw new ArrayIndexOutOfBoundsException();
+    }
+
+    public boolean equals(final Permutations<?> another) {
+        return size == another.size
+                && Arrays.equals(choices, another.choices)
+                && positions.length == another.positions.length;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Permutations)) return false;
+        return equals((Permutations<?>) o);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + Arrays.hashCode(choices);
+        result = 31 * result + positions.length;
+        result = 31 * result + size;
+        return result;
     }
 }
