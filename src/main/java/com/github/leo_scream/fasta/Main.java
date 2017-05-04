@@ -6,10 +6,12 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Denis Verkhoturov, mod.satyr@gmail.com
@@ -17,13 +19,9 @@ import java.util.stream.Collectors;
 public class Main {
     public static void main(String[] args) {
         try (final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
-            System.out.print("Path to fasta directory: ");
-            final Path directory = Paths.get(reader.readLine());
-            System.out.print("K-mer length: ");
-            final int kmerLength = Integer.parseInt(reader.readLine());
+            final Path workingPath = readPath(reader);
+            final int kmerLength = readLenght(reader);
             System.out.println("Result files:");
-
-            if (!directory.toFile().isDirectory()) throw new IOException("Path must be a directory");
 
             final SortedSet<String> permutations = new TreeSet<>(
                     new Permutations<>(new TreeSet<>(Set.of("A", "C", "G", "T")), new String[kmerLength])
@@ -32,15 +30,34 @@ public class Main {
                             .collect(Collectors.toSet())
             );
 
-            Files.list(directory)
-                    .filter(path -> path.toString().endsWith(".fasta"))
+            paths(workingPath)
                     .map(path -> new Statistics(path, permutations))
                     .map(Statistics::save)
                     .forEach(System.out::println);
         } catch (IOException e) {
-            System.err.println("Can't work with this path cause: " + e.getMessage());
-        } catch (NumberFormatException e) {
-            System.err.println("K-mer length must be unsighted integer value");
+            System.err.println("Something goes wrong, cause: " + e.getMessage());
         }
+    }
+
+    private static int readLenght(final BufferedReader reader) throws IOException {
+        System.out.print("K-mer length: ");
+        return Integer.parseInt(reader.readLine());
+    }
+
+    private static Path readPath(final BufferedReader reader) throws IOException {
+        System.out.print("Path to fasta directory or file: ");
+        return Paths.get(reader.readLine());
+    }
+
+    private static Stream<Path> paths(final Path path) throws IOException {
+        final Set<Path> paths = new HashSet<>();
+        if (path.toFile().isDirectory()) {
+            Files.list(path)
+                    .filter(item -> item.toString().endsWith(".fasta"))
+                    .forEach(paths::add);
+        } else if (path.toString().endsWith(".fasta")) {
+            paths.add(path);
+        }
+        return paths.stream();
     }
 }
