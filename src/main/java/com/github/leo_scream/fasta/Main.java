@@ -6,10 +6,9 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,11 +22,11 @@ public class Main {
             final int kmerLength = readLenght(reader);
             System.out.println("Result files:");
 
-            final SortedSet<String> permutations = new TreeSet<>(
+            final SortedMap<String, AtomicInteger> permutations = new TreeMap<>(
                     new Permutations<>(new TreeSet<>(Set.of("A", "C", "G", "T")), new String[kmerLength])
                             .stream()
                             .map(parts -> String.join("", parts))
-                            .collect(Collectors.toSet())
+                            .collect(Collectors.toMap(Function.identity(), ignored -> new AtomicInteger(0)))
             );
 
             paths(workingPath)

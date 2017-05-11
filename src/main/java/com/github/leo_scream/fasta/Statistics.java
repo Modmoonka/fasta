@@ -6,7 +6,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -15,9 +18,9 @@ import java.util.stream.Stream;
  */
 public class Statistics {
     private final Fasta file;
-    private final SortedSet<String> permutations;
+    private final SortedMap<String, AtomicInteger> permutations;
 
-    public Statistics(final Path path, SortedSet<String> permutations) {
+    public Statistics(final Path path, SortedMap<String, AtomicInteger> permutations) {
         Objects.requireNonNull(path);
         Objects.requireNonNull(permutations);
         this.file = new Fasta(path);
@@ -28,8 +31,8 @@ public class Statistics {
         return file;
     }
 
-    public SortedSet<String> permutations() {
-        return permutations;
+    public Set<String> permutations() {
+        return permutations.keySet();
     }
 
     public Stream<SequenceOccurrences> sequenceOccurrences() {
@@ -41,15 +44,19 @@ public class Statistics {
         final String filename = file.path().toString().replace(file.extension(), ".tsv");
         try (final BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
             writer.write("Sequence\t");
-            writer.write(String.join("\t", permutations));
+            writer.write(String.join("\t", permutations.keySet()));
             writer.newLine();
             sequenceOccurrences().forEach(
                     occurrences -> {
                         try {
                             writer.write(occurrences.sequence().data() + "\t");
                             writer.write(
-                                    occurrences.occurrences(permutations).values().stream()
-                                            .map(count -> count == 0 ? "0" : "1")
+                                    occurrences.occurrences(permutations.keySet()).entrySet().stream()
+                                            .map(entry -> {
+                                                final long count = entry.getValue();
+                                                if (count > 0 ) permutations.get(entry.getKey()).incrementAndGet();
+                                                return count == 0 ? "0" : "1";
+                                            })
                                             .collect(Collectors.joining("\t"))
                             );
                             writer.newLine();
@@ -61,9 +68,30 @@ public class Statistics {
                         }
                     }
             );
+            writer.newLine();
         } catch (IOException e) {
             System.err.println("Can't write to file " + filename + " cause: " + e.getMessage());
         }
+
+        final String footer = file.path().toString().replace(file.extension(), "-footer.tsv");
+        try (final BufferedWriter writer = new BufferedWriter(new FileWriter(footer))) {
+            permutations.forEach(
+                    (permutation, counter) -> {
+                        try {
+                            writer.write(permutation + "\t" + counter.get() + "\n");
+                        } catch (IOException e) {
+                            System.err.println(
+                                "Can't write k-mer " + permutation +
+                                        " occurred " + counter.get() +
+                                        " to file " + footer + " cause: " + e.getMessage());
+                        }
+                    }
+            );
+            writer.newLine();
+        } catch (IOException e) {
+            System.err.println("Can't write footer to file " + filename + " cause: " + e.getMessage());
+        }
+
         return Paths.get(filename);
     }
 
