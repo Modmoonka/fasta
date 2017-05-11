@@ -26,7 +26,7 @@ public class SequenceOccurrences {
         return permutations.stream().collect(
                 Collectors.toMap(
                         Function.identity(),
-                        permutation -> Pattern.compile(permutation).matcher(sequence.data()).results().count()
+                        permutation -> Pattern.compile(permutation).matcher(sequence.aptamer()).results().count()
                 )
         );
     }

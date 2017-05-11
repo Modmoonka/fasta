@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -49,12 +48,12 @@ public class Statistics {
             sequenceOccurrences().forEach(
                     occurrences -> {
                         try {
-                            writer.write(occurrences.sequence().data() + "\t");
+                            writer.write(occurrences.sequence().aptamer() + "\t");
                             writer.write(
                                     occurrences.occurrences(permutations.keySet()).entrySet().stream()
                                             .map(entry -> {
                                                 final long count = entry.getValue();
-                                                if (count > 0 ) permutations.get(entry.getKey()).incrementAndGet();
+                                                if (count > 0) permutations.get(entry.getKey()).incrementAndGet();
                                                 return count == 0 ? "0" : "1";
                                             })
                                             .collect(Collectors.joining("\t"))
@@ -63,7 +62,7 @@ public class Statistics {
                         } catch (IOException e) {
                             System.err.println(
                                     "Can't write sequence " + occurrences.sequence().name() +
-                                            " " + occurrences.sequence().data() +
+                                            " " + occurrences.sequence().aptamer() +
                                             " to file " + filename + " cause: " + e.getMessage());
                         }
                     }
@@ -75,17 +74,12 @@ public class Statistics {
 
         final String footer = file.path().toString().replace(file.extension(), "-footer.tsv");
         try (final BufferedWriter writer = new BufferedWriter(new FileWriter(footer))) {
-            permutations.forEach(
-                    (permutation, counter) -> {
-                        try {
-                            writer.write(permutation + "\t" + counter.get() + "\n");
-                        } catch (IOException e) {
-                            System.err.println(
-                                "Can't write k-mer " + permutation +
-                                        " occurred " + counter.get() +
-                                        " to file " + footer + " cause: " + e.getMessage());
-                        }
-                    }
+            writer.write(String.join("\t", permutations.keySet()));
+            writer.newLine();
+            writer.write(
+                    permutations.values().stream()
+                            .map(AtomicInteger::toString)
+                            .collect(Collectors.joining("\t"))
             );
             writer.newLine();
         } catch (IOException e) {

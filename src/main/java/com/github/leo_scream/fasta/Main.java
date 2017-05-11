@@ -19,13 +19,12 @@ public class Main {
     public static void main(String[] args) {
         try (final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
             final Path workingPath = readPath(reader);
+            final Path aptamerPath = readAptamer(reader);
             final int kmerLength = readLenght(reader);
             System.out.println("Result files:");
 
             final SortedMap<String, AtomicInteger> permutations = new TreeMap<>(
-                    new Permutations<>(new TreeSet<>(Set.of("A", "C", "G", "T")), new String[kmerLength])
-                            .stream()
-                            .map(parts -> String.join("", parts))
+                    kmersFromSequence(new String(Files.readAllBytes(aptamerPath)), kmerLength).stream()
                             .collect(Collectors.toMap(Function.identity(), ignored -> new AtomicInteger(0)))
             );
 
@@ -36,6 +35,11 @@ public class Main {
         } catch (IOException e) {
             System.err.println("Something goes wrong, cause: " + e.getMessage());
         }
+    }
+
+    private static Path readAptamer(final BufferedReader reader) throws IOException {
+        System.out.print("Path to aptamer file: ");
+        return Paths.get(reader.readLine());
     }
 
     private static int readLenght(final BufferedReader reader) throws IOException {
@@ -58,5 +62,13 @@ public class Main {
             paths.add(path);
         }
         return paths.stream();
+    }
+
+    private static Set<String> kmersFromSequence(final String aptamer, final int k) {
+        Set<String> sequences = new TreeSet<>();
+        for (int i = 0; i < aptamer.length() - k; i++) {
+            sequences.add(aptamer.substring(i, i + k));
+        }
+        return sequences;
     }
 }

@@ -7,28 +7,29 @@ import java.util.Objects;
  */
 public class Sequence {
     private final String name;
-    private final String data;
+    private final String aptamer;
 
-    private Sequence(final String name, final String data) {
+    private Sequence(final String name, final String aptamer) {
         this.name = name;
-        this.data = data;
+        this.aptamer = aptamer;
     }
 
     /**
      * Create new {@code Sequence} object.
      *
-     * @param name sequence name
-     * @param data sequence data. Must matches {@code dataPattern}
+     * @param name    sequence name
+     * @param aptamer sequence aptamer. Must matches {@code dataPattern}
      * @return new object of {@code Sequence} class
-     * @throws NullPointerException     if {@code name} or {@code data} is null
-     * @throws IllegalArgumentException if {@code data} not matches {@code dataPattern}
+     * @throws NullPointerException     if {@code name} or {@code aptamer} is null
+     * @throws IllegalArgumentException if {@code aptamer} not matches {@code dataPattern}
      */
-    public static Sequence create(final String name, final String data) {
+    public static Sequence create(final String name, final String aptamer) {
         Objects.requireNonNull(name);
-        Objects.requireNonNull(data);
+        Objects.requireNonNull(aptamer);
         final String dataPattern = "^[ACGT]++$";
-        if (!data.matches(dataPattern)) throw new IllegalArgumentException("Sequence data is not valid: " + data);
-        return new Sequence(name, data);
+        if (!aptamer.matches(dataPattern))
+            throw new IllegalArgumentException("Sequence aptamer is not valid: " + aptamer);
+        return new Sequence(name, aptamer);
     }
 
     /**
@@ -39,14 +40,14 @@ public class Sequence {
     }
 
     /**
-     * @return Sequence data
+     * @return Sequence aptamer
      */
-    public String data() {
-        return data;
+    public String aptamer() {
+        return aptamer;
     }
 
     public boolean equals(final Sequence another) {
-        return name.equals(another.name) && data.equals(another.data);
+        return name.equals(another.name) && aptamer.equals(another.aptamer);
     }
 
     @Override
@@ -60,7 +61,7 @@ public class Sequence {
     public int hashCode() {
         int result = 17;
         result = 31 * result + name.hashCode();
-        result = 31 * result + data.hashCode();
+        result = 31 * result + aptamer.hashCode();
         return result;
     }
 }
